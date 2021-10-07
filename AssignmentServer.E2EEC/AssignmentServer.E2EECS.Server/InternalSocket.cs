@@ -18,7 +18,7 @@ namespace AssignmentServer.E2EECS.Server
         private int idleTimeMax = 300;
         private int idleTime = 0;
 
-        public Func<int, byte[], byte[]> OnDataReceived;
+        public Func<InternalSocketContext, byte[]> OnDataReceived;
         public Action OnSocketTimeout;
 
         public InternalSocket(int port)
@@ -56,33 +56,6 @@ namespace AssignmentServer.E2EECS.Server
             Console.WriteLine("[INNER_SOCKET://{0}] Ignition", masterPort);
 
             masterSocket.BeginAccept(AcceptCallback, null);
-
-            if (idleTimeMax > 0)
-            {
-                Task.Run(() =>
-                {
-                    while (true)
-                    {
-                        Thread.Sleep(1000);
-                        Interlocked.Increment(ref idleTime);
-
-                        if (idleTime > idleTimeMax)
-                        {
-                            lock (masterSocket)
-                            {
-                                Console.WriteLine("[INNER_SOCKET://{0}] Master socket terminated due to timeout", masterPort);
-
-                                masterSocket.Close();
-                                masterSocket = null;
-
-                                OnSocketTimeout?.Invoke();
-
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
         }
 
         private void AcceptCallback(IAsyncResult iar)
@@ -136,7 +109,7 @@ namespace AssignmentServer.E2EECS.Server
                 Interlocked.Exchange(ref idleTime, 0);
 
                 var receivedBytes = context.AcceptedSocket.EndReceive(iar);
-                var result = OnDataReceived?.Invoke(receivedBytes, context.ContextBuffer)
+                var result = OnDataReceived?.Invoke(context)
                              ?? Array.Empty<byte>();
 
                 context.AcceptedSocket
