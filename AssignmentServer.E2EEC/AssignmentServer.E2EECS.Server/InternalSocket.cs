@@ -45,12 +45,6 @@ namespace AssignmentServer.E2EECS.Server
             return this;
         }
 
-        public InternalSocket RegisterReceiver(Func<int, byte[], byte[]> receiver)
-        {
-            OnDataReceived = receiver;
-            return this;
-        }
-
         public void Ignite()
         {
             Console.WriteLine("[INNER_SOCKET://{0}] Ignition", masterPort);
@@ -78,11 +72,19 @@ namespace AssignmentServer.E2EECS.Server
                 var context = new InternalSocketContext
                 {
                     AcceptedSocket = masterSocket.EndAccept(iar),
-                    ContextBuffer = new byte[1024]
+                    Buffer = new byte[1024],
+                    Timer = new InternalSocketTimer(idleTimeMax)
                 };
 
+                context.Timer.OnTimerTimeout = 
+                    () => {
+                        context.AcceptedSocket?.Close();
+                        context.Buffer = null;
+                        context.Invalid = true;
+                    };
+
                 context.AcceptedSocket
-                       .BeginReceive(context.ContextBuffer, 0, context.ContextBuffer.Length,
+                       .BeginReceive(context.Buffer, 0, context.Buffer.Length,
                                      SocketFlags.None, ReceiveCallback, context);
             }
             catch (NullReferenceException ex)
@@ -136,7 +138,7 @@ namespace AssignmentServer.E2EECS.Server
                 var sentBytes = context.AcceptedSocket.EndSend(iar);
 
                 context.AcceptedSocket
-                       .BeginReceive(context.ContextBuffer, 0, context.ContextBuffer.Length,
+                       .BeginReceive(context.Buffer, 0, context.Buffer.Length,
                                      SocketFlags.None, ReceiveCallback, context);
             }
             catch (SocketException ex)
@@ -149,6 +151,8 @@ namespace AssignmentServer.E2EECS.Server
     public class InternalSocketContext
     {
         public Socket AcceptedSocket { get; set; }
-        public byte[] ContextBuffer { get; set; }
+        public byte[] Buffer { get; set; }
+        public bool Invalid { get; set; }
+        public InternalSocketTimer Timer { get; set; }
     }
 }
