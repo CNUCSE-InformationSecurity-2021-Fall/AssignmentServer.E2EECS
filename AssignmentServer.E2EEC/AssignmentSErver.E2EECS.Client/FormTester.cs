@@ -32,9 +32,15 @@ namespace AssignmentSErver.E2EECS.Client
             var addressParsed = IPAddress.TryParse(serverAddressBox.Text, out var address);
             var portParsed = int.TryParse(serverPortBox.Text, out var port);
 
-            if (!addressParsed || !portParsed)
+            if (!addressParsed)
             {
-                MessageBox.Show("Wrong address/port format");
+                var entry = Dns.GetHostEntry(serverAddressBox.Text);
+                address = entry.AddressList[0];
+            }
+
+            if (!portParsed)
+            {
+                MessageBox.Show("Wrong port format");
                 return;
             }
 
