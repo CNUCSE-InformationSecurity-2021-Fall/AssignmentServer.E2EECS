@@ -9,6 +9,8 @@ namespace AssignmentServer.E2EECS.Server
 {
     public class TripleEContext
     {
+        public InternalSocketContext SocketContext { get; set; }
+
         public TripleEMethods Method { get; set; }
         public Dictionary<string, string> Headers { get; set; }
         public string Body { get; set; }
@@ -37,7 +39,7 @@ namespace AssignmentServer.E2EECS.Server
                 Method = TripleEMethods.UNKNOWN,
                 Headers = new()
                 {
-                    { "Timestamp", DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss") }
+                    { "Timestamp", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") }
                 },
                 Body = null
             };
