@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace AssignmentServer.E2EECS.Server
 {
@@ -6,7 +7,8 @@ namespace AssignmentServer.E2EECS.Server
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var server = new TripleEServer();
+            Thread.Sleep(Timeout.Infinite);
         }
     }
 }
