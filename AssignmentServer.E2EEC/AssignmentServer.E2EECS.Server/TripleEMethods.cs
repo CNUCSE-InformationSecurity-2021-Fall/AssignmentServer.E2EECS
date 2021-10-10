@@ -8,12 +8,12 @@ namespace AssignmentServer.E2EECS.Server
 {
     public enum TripleEMethods
     {
-        UNKNOWN,
+        UNKNOWN, RELAYOK,
 
         /* Request Methods */
         CONNECT, DISCONNECT, KEYXCHG, KEYXCHGRST, MSGSEND,
 
         /* Response Methods */
-        ACCEPT, DENY, BYE, KEYXCHGOK, KEYXCHGFAIL, MSGSENDOK, MSGRECV
+        ACCEPT, DENY, BYE, KEYXCHGOK, KEYXCHGFAIL, MSGSENDOK, MSGSENDFAIL, MSGRECV
     }
 }
