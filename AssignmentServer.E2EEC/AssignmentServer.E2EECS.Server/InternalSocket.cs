@@ -48,8 +48,15 @@ namespace AssignmentServer.E2EECS.Server
         public void Ignite()
         {
             Console.WriteLine("[INNER_SOCKET://{0}] Ignition", masterPort);
+            WaitAccept();
+        }
 
+        private void WaitAccept()
+        {
             masterSocket.BeginAccept(AcceptCallback, null);
+            Interlocked.Increment(ref waitingSockets);
+
+            Console.WriteLine("[INNER_SOCKET://{0}] Waiting {1} sockets", masterPort, waitingSockets);
         }
 
         private void AcceptCallback(IAsyncResult iar)
@@ -63,8 +70,7 @@ namespace AssignmentServer.E2EECS.Server
 
             if (waitingSockets == 0)
             {
-                masterSocket.BeginAccept(AcceptCallback, null);
-                Interlocked.Increment(ref waitingSockets);
+                WaitAccept();
             }
 
             try
@@ -106,17 +112,40 @@ namespace AssignmentServer.E2EECS.Server
             if (context is null)
                 return;
 
+            if (context.AcceptedSocket is null || !context.AcceptedSocket.Connected)
+                return;
+
             try
             {
                 Interlocked.Exchange(ref idleTime, 0);
 
                 var receivedBytes = context.AcceptedSocket.EndReceive(iar);
-                var result = OnDataReceived?.Invoke(context)
-                             ?? Array.Empty<byte>();
+                context.Buffer = context.Buffer[0..receivedBytes];
 
-                context.AcceptedSocket
-                       .BeginSend(result, 0, result.Length,
-                                  SocketFlags.None, SendCallback, context);
+                var resultByteList = OnDataReceived?.Invoke(context).ToList()
+                             ?? new List<byte>();
+
+                resultByteList.Add(0x00);
+
+                var result = resultByteList.ToArray();
+
+                if (result.Length > 0)
+                {
+                    context.AcceptedSocket.BeginSend(
+                        result, 0, result.Length,
+                        SocketFlags.None, SendCallback, context);
+
+                    if (context.Invalid)
+                    {
+                        context.AcceptedSocket.Close();
+                    }
+                }
+                else
+                {
+                    context.AcceptedSocket
+                           .BeginReceive(context.Buffer, 0, context.Buffer.Length,
+                                         SocketFlags.None, ReceiveCallback, context);
+                }
             }
             catch (SocketException ex)
             {
@@ -137,6 +166,7 @@ namespace AssignmentServer.E2EECS.Server
             {
                 var sentBytes = context.AcceptedSocket.EndSend(iar);
 
+                context.Buffer = new byte[4096];
                 context.AcceptedSocket
                        .BeginReceive(context.Buffer, 0, context.Buffer.Length,
                                      SocketFlags.None, ReceiveCallback, context);
