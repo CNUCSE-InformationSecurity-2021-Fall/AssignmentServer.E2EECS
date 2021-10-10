@@ -45,7 +45,6 @@ namespace AssignmentSErver.E2EECS.Client
             this.serverAddressBox.Name = "serverAddressBox";
             this.serverAddressBox.Size = new System.Drawing.Size(290, 21);
             this.serverAddressBox.TabIndex = 0;
-            this.serverAddressBox.Text = "127.0.0.1";
             // 
             // serverPortBox
             // 
@@ -53,7 +52,6 @@ namespace AssignmentSErver.E2EECS.Client
             this.serverPortBox.Name = "serverPortBox";
             this.serverPortBox.Size = new System.Drawing.Size(290, 21);
             this.serverPortBox.TabIndex = 0;
-            this.serverPortBox.Text = "8200";
             // 
             // label1
             // 
