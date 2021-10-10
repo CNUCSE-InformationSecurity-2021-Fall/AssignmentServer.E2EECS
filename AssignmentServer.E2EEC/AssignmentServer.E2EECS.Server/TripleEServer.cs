@@ -26,7 +26,7 @@ namespace AssignmentServer.E2EECS.Server
 
         public TripleEServer()
         {
-            isck = new InternalSocket(8200);
+            isck = new InternalSocket(8080);
             isck.OnDataReceived = InternalSocketReceived;
 
             sessions = new Dictionary<string, InternalSocketContext>();
