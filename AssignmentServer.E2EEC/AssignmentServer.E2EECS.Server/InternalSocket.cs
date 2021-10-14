@@ -120,25 +120,29 @@ namespace AssignmentServer.E2EECS.Server
                 Interlocked.Exchange(ref idleTime, 0);
 
                 var receivedBytes = context.AcceptedSocket.EndReceive(iar);
+
+                if (receivedBytes == 0) {
+                    context.AcceptedSocket.Close();
+                    return;
+                }
+
                 context.Buffer = context.Buffer[0..receivedBytes];
 
-                var resultByteList = OnDataReceived?.Invoke(context).ToList()
-                             ?? new List<byte>();
+                var resultByteList = OnDataReceived?.Invoke(context) ?? Array.Empty<byte>();
+                var zeroPos = 0;
 
-                resultByteList.Add(0x00);
-
-                var result = resultByteList.ToArray();
+                for (var i = 0; i < resultByteList.Length; ++i) {
+                    if (resultByteList[i] == 0x00) break;
+                    zeroPos++;
+                }
+                
+                var result = resultByteList[0..zeroPos];
 
                 if (result.Length > 0)
                 {
                     context.AcceptedSocket.BeginSend(
                         result, 0, result.Length,
                         SocketFlags.None, SendCallback, context);
-
-                    if (context.Invalid)
-                    {
-                        context.AcceptedSocket.Close();
-                    }
                 }
                 else
                 {

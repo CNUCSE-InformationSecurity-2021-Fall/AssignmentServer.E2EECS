@@ -50,7 +50,7 @@ namespace AssignmentServer.E2EECS.Server
             var context = ResponseContext();
 
             context.Method = TripleEMethods.DENY;
-            context.Body = message;
+            context.Body = message.Trim('\0', ' ', '\n');
 
             return context;
         }

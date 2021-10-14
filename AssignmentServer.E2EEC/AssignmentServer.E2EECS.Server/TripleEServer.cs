@@ -95,7 +95,12 @@ namespace AssignmentServer.E2EECS.Server
             using var stream = new MemoryStream(buffer);
             using var reader = new StreamReader(stream);
 
-            var preamble = reader.ReadLine().Split(' ');
+            var preamble = reader?.ReadLine()?.Split(' ');
+
+            if (preamble is null)
+            {
+                return null;
+            }
 
             if (preamble.Length != 2 || preamble[0] != "3EPROTO")
             {
