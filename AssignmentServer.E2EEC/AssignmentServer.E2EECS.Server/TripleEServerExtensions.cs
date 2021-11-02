@@ -107,6 +107,7 @@ namespace AssignmentServer.E2EECS.Server
                 relay.Headers.Add("To", to);
                 relay.Body = reqContext.Body;
 
+                Console.WriteLine($"[MSGSEND] {from} -> {to} :Message: {reqContext.Body}");
                 server.RelayRequest(route.To, relay);
 
                 result.Method = TripleEMethods.MSGSENDOK;
