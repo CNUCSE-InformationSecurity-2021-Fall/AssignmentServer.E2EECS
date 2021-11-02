@@ -56,7 +56,14 @@ namespace AssignmentServer.E2EECS.Server
             masterSocket.BeginAccept(AcceptCallback, null);
             Interlocked.Increment(ref waitingSockets);
 
-            Console.WriteLine("[INNER_SOCKET://{0}] Waiting {1} sockets", masterPort, waitingSockets);
+            if (waitingSockets < 1)
+            {
+                WaitAccept();
+            }
+            else
+            {
+                Console.WriteLine("[INNER_SOCKET://{0}] Waiting {1} sockets", masterPort, waitingSockets);
+            }
         }
 
         private void AcceptCallback(IAsyncResult iar)
